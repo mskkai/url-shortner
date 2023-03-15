@@ -37,6 +37,10 @@ public class UrlService {
         return urlRepository.findAll();
     }
 
+    /**
+     * Method to retrieve the source URL from target shortened URL
+     * This method also updates the visits for the given URL
+     */
     public Url getUrlByShortUrl(String id) {
         Url urlToNavigate = urlRepository.findUrlByShorturl(id);
         if (urlToNavigate != null) {
@@ -48,6 +52,9 @@ public class UrlService {
         return urlToNavigate;
     }
 
+    /**
+     * Method to validate the given URL and to generate the shortened URL for the given URL
+     */
     public Url generateShortUrl(String url) {
         if(! isUrlValid(url)) {
             System.out.println("URL is not valid");
