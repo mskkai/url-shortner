@@ -3,6 +3,9 @@ package com.shortener.url.service;
 import com.shortener.url.modal.Url;
 import com.shortener.url.repository.UrlRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.authentication.AnonymousAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import static com.shortener.url.logic.GenerateShortUrl.getShortUrl;
@@ -10,7 +13,6 @@ import static com.shortener.url.logic.GenerateShortUrl.isUrlValid;
 
 import java.time.LocalDate;
 import java.util.List;
-
 
 @Service
 public class UrlService {
@@ -34,7 +36,14 @@ public class UrlService {
     }
 
     public List<Url> getAllUrls() {
-        return urlRepository.findAll();
+        String currentUserName = "";
+        // logic to retreive the current user name
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (!(authentication instanceof AnonymousAuthenticationToken)) {
+            currentUserName = authentication.getName();
+
+        }
+        return urlRepository.findByUserName(currentUserName);
     }
 
     /**
@@ -53,15 +62,24 @@ public class UrlService {
     }
 
     /**
-     * Method to validate the given URL and to generate the shortened URL for the given URL
+     * Method to validate the given URL and to generate the shortened URL for the
+     * given URL
      */
     public Url generateShortUrl(String url) {
-        if(! isUrlValid(url)) {
+        String currentUserName = "";
+        // logic to retreive the current user name
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (!(authentication instanceof AnonymousAuthenticationToken)) {
+            currentUserName = authentication.getName();
+
+        }
+        if (!isUrlValid(url)) {
             System.out.println("URL is not valid");
             return null;
         }
 
         Url urlObject = new Url();
+        urlObject.setUserName(currentUserName);
         urlObject.setOriginalurl(url);
         urlObject.setShorturl(getShortUrl(url));
         urlObject.setExpiryAt(LocalDate.now().plusDays(EXP_DAYS_VALUE + 1).atStartOfDay());
